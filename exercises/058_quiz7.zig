@@ -89,7 +89,7 @@ var f = Place{ .name = "Fox Pond" };
 // places on the map. Note that we do not have to specify the type of
 // this value because we don't actually use it in our program once
 // it's compiled! (Don't worry if this doesn't make sense yet.)
-const place_count = 6;
+const place_count: comptime_int = 6;
 
 // Now let's create all of the paths between sites. A path goes from
 // one place to another and has a distance.
@@ -192,8 +192,8 @@ const TripItem = union(enum) {
             // Oops! The hermit forgot how to capture the union values
             // in a switch statement. Please capture both values as
             // 'p' so the print statements work!
-            .place => print("{s}", .{p.name}),
-            .path => print("--{}->", .{p.dist}),
+            .place => |p| print("{s}", .{p.name}),
+            .path => |p| print("--{}->", .{p.dist}),
         }
     }
 };
@@ -255,7 +255,7 @@ const HermitsNotebook = struct {
             // dereference and optional value "unwrapping" look
             // together. Remember that you return the address with the
             // "&" operator.
-            if (place == entry.*.?.place) return entry;
+            if (place == entry.*.?.place) return &entry.*.?;
             // Try to make your answer this long:__________;
         }
         return null;
@@ -309,7 +309,7 @@ const HermitsNotebook = struct {
     //
     // Looks like the hermit forgot something in the return value of
     // this function. What could that be?
-    fn getTripTo(self: *HermitsNotebook, trip: []?TripItem, dest: *Place) void {
+    fn getTripTo(self: *HermitsNotebook, trip: []?TripItem, dest: *Place) TripError!void {
         // We start at the destination entry.
         const destination_entry = self.getEntry(dest);
 
@@ -345,8 +345,9 @@ const HermitsNotebook = struct {
             // checked for grues?)
             // Note: you do not need to fix anything here.
             const previous_entry = self.getEntry(current_entry.coming_from.?);
-            if (previous_entry == null) return TripError.EatenByAGrue;
-            current_entry = previous_entry.?;
+            // if (previous_entry == null) return TripError.EatenByAGrue;
+            // current_entry = previous_entry.?;
+            current_entry = previous_entry orelse return TripError.EatenByAGrue;
         }
     }
 };
